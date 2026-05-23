@@ -22,6 +22,7 @@ export interface SyncConfig {
   readonly intervalMs: number;
   readonly includePurchased: boolean;
   readonly dryRun: boolean;
+  readonly stateFile: string;
   /** Maps Paprika list names to the Store label written in Notion. Falls back to the list name if unmapped. */
   readonly listStoreMap: Record<string, string>;
 }

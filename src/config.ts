@@ -11,6 +11,7 @@ const envSchema = z.object({
   NOTION_DEFAULT_STORE: z.string().min(1).default('General Grocery'),
   NOTION_TITLE_PROPERTY: z.string().min(1).default('Task name'),
   SYNC_INTERVAL_MS: z.coerce.number().int().positive().default(60_000),
+  SYNC_STATE_FILE: z.string().min(1).default('.sync-state.json'),
   SYNC_INCLUDE_PURCHASED: z
     .enum(['true', 'false'])
     .transform((v) => v === 'true')
@@ -62,6 +63,7 @@ export function loadConfig(): AppConfig {
       intervalMs: env.SYNC_INTERVAL_MS,
       includePurchased: env.SYNC_INCLUDE_PURCHASED,
       dryRun: env.DRY_RUN,
+      stateFile: env.SYNC_STATE_FILE,
       listStoreMap: env.NOTION_STORE_RELATION_MAP,
     },
     logLevel: env.LOG_LEVEL,

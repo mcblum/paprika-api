@@ -58,6 +58,10 @@ export class PaprikaClient {
     await this.postGroceryItem({ ...item, purchased: false });
   }
 
+  async updateItem(item: PaprikaGroceryItem): Promise<void> {
+    await this.postGroceryItem(item);
+  }
+
   private async postGroceryItem(item: PaprikaGroceryItem): Promise<void> {
     const payload = gzipSync(Buffer.from(JSON.stringify([item]), 'utf8'));
     const form = new FormData();
