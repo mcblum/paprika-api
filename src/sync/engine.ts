@@ -12,6 +12,7 @@ interface SyncEngineConfig {
   readonly dryRun: boolean;
   readonly stateFile: string;
   readonly listStoreMap: Record<string, string>;
+  readonly bidirectionalMetadata: boolean;
 }
 
 type SyncWinner = 'paprika' | 'connector';
@@ -186,6 +187,7 @@ export class SyncEngine {
         await state.upsertItem({
           connectorName: connector.name,
           paprikaUid: uid,
+          name: item.name,
           snapshot: {
             paprika: { hash: currentHash, changedAt },
             connector: { hash: currentHash, changedAt },
@@ -226,6 +228,7 @@ export class SyncEngine {
       await state.upsertItem({
         connectorName: connector.name,
         paprikaUid: item.uid,
+        name: item.name,
         snapshot: result.snapshot,
         occurredAt: observedAt,
         isCompleted: item.purchased,
@@ -240,6 +243,7 @@ export class SyncEngine {
       await state.upsertItem({
         connectorName: connector.name,
         paprikaUid: item.uid,
+        name: item.name,
         snapshot: {
           paprika: result.snapshot.paprika,
           connector: { hash: paprikaHash, changedAt: result.snapshot.paprika.changedAt },
@@ -248,6 +252,43 @@ export class SyncEngine {
         isCompleted: item.purchased,
       });
       summary.updated++;
+      return;
+    }
+
+    if (!this.config.bidirectionalMetadata) {
+      const purchasedChanged = synced.content.purchased !== item.purchased;
+      if (!purchasedChanged) {
+        // Metadata-only change from connector — accept divergence, no Paprika update.
+        await state.upsertItem({
+          connectorName: connector.name,
+          paprikaUid: item.uid,
+          name: item.name,
+          snapshot: result.snapshot,
+          occurredAt: observedAt,
+          isCompleted: item.purchased,
+        });
+        summary.skipped++;
+        return;
+      }
+      // Only purchased changed — sync just that field to Paprika.
+      const purchasedItem = { ...item, purchased: synced.content.purchased };
+      const action = purchasedItem.purchased ? 'PURCHASE' : 'UNPURCHASE';
+      this.logger.info(`[${connector.name}] ${action.padEnd(10)} Paprika ← ${synced.content.name}`);
+      if (!this.config.dryRun) await this.paprika.updateItem(purchasedItem);
+      const updatedPaprikaHash = hashFromItem(purchasedItem, effectiveStoreName);
+      await state.upsertItem({
+        connectorName: connector.name,
+        paprikaUid: item.uid,
+        name: item.name,
+        snapshot: {
+          paprika: { hash: updatedPaprikaHash, changedAt: result.snapshot.connector.changedAt },
+          connector: result.snapshot.connector,
+        },
+        occurredAt: result.snapshot.connector.changedAt,
+        isCompleted: purchasedItem.purchased,
+      });
+      if (action === 'PURCHASE') summary.purchased++;
+      else summary.unpurchased++;
       return;
     }
 
@@ -270,6 +311,7 @@ export class SyncEngine {
     await state.upsertItem({
       connectorName: connector.name,
       paprikaUid: item.uid,
+      name: updatedItem.name,
       snapshot: {
         paprika: { hash: updatedPaprikaHash, changedAt: result.snapshot.connector.changedAt },
         connector: result.snapshot.connector,

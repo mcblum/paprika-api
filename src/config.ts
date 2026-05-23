@@ -16,6 +16,10 @@ const envSchema = z.object({
     .enum(['true', 'false'])
     .transform((v) => v === 'true')
     .default('false'),
+  SYNC_BIDIRECTIONAL_METADATA: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .default('false'),
   DRY_RUN: z
     .enum(['true', 'false'])
     .transform((v) => v === 'true')
@@ -65,6 +69,7 @@ export function loadConfig(): AppConfig {
       dryRun: env.DRY_RUN,
       stateFile: env.SYNC_STATE_FILE,
       listStoreMap: env.NOTION_STORE_RELATION_MAP,
+      bidirectionalMetadata: env.SYNC_BIDIRECTIONAL_METADATA,
     },
     logLevel: env.LOG_LEVEL,
     connector: env.CONNECTOR,
