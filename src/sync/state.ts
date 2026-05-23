@@ -5,18 +5,27 @@ import { ItemSchema, ItemSnapshotSchema } from '../types/item.js';
 import type { Item, ItemSnapshot, UpsertItemInput } from '../types/item.js';
 import type { StorageProvider } from '../types/storage.js';
 
+const CURRENT_STATE_VERSION = 3;
+
 const LegacySyncStateSchema = z.object({
   version: z.literal(1),
   connectors: z.record(z.record(ItemSnapshotSchema)),
 });
 
-const JsonItemStateSchema = z.object({
+const LegacyJsonItemSchema = ItemSchema.omit({ name: true });
+
+const LegacyJsonItemStateSchema = z.object({
   version: z.literal(2),
+  items: z.record(z.record(LegacyJsonItemSchema)),
+});
+
+const JsonItemStateSchema = z.object({
+  version: z.literal(CURRENT_STATE_VERSION),
   items: z.record(z.record(ItemSchema)),
 });
 
 interface JsonItemState {
-  readonly version: 2;
+  readonly version: typeof CURRENT_STATE_VERSION;
   readonly items: Record<string, Record<string, Item>>;
 }
 
@@ -26,6 +35,10 @@ function latestTimestamp(left: string, right: string): string {
 
 function earliestTimestamp(left: string, right: string): string {
   return Date.parse(left) <= Date.parse(right) ? left : right;
+}
+
+function unknownItemName(paprikaUid: string): string {
+  return `Unknown (${paprikaUid})`;
 }
 
 function upgradeLegacyState(json: z.infer<typeof LegacySyncStateSchema>): JsonItemState {
@@ -45,6 +58,7 @@ function upgradeLegacyState(json: z.infer<typeof LegacySyncStateSchema>): JsonIt
       items[connectorName][paprikaUid] = {
         connectorName,
         paprikaUid,
+        name: unknownItemName(paprikaUid),
         ...snapshot,
         createdAt,
         updatedAt,
@@ -53,7 +67,23 @@ function upgradeLegacyState(json: z.infer<typeof LegacySyncStateSchema>): JsonIt
     }
   }
 
-  return { version: 2, items };
+  return { version: CURRENT_STATE_VERSION, items };
+}
+
+function upgradeJsonItemState(json: z.infer<typeof LegacyJsonItemStateSchema>): JsonItemState {
+  const items: Record<string, Record<string, Item>> = {};
+
+  for (const [connectorName, connectorItems] of Object.entries(json.items)) {
+    items[connectorName] = {};
+    for (const [paprikaUid, item] of Object.entries(connectorItems)) {
+      items[connectorName][paprikaUid] = {
+        ...item,
+        name: unknownItemName(paprikaUid),
+      };
+    }
+  }
+
+  return { version: CURRENT_STATE_VERSION, items };
 }
 
 function snapshotChanged(existing: Item, snapshot: ItemSnapshot): boolean {
@@ -66,7 +96,7 @@ function snapshotChanged(existing: Item, snapshot: ItemSnapshot): boolean {
 }
 
 export class JsonStorageProvider implements StorageProvider {
-  private data: JsonItemState = { version: 2, items: {} };
+  private data: JsonItemState = { version: CURRENT_STATE_VERSION, items: {} };
 
   constructor(private readonly path: string) {}
 
@@ -94,6 +124,12 @@ export class JsonStorageProvider implements StorageProvider {
     const parsed = JsonItemStateSchema.safeParse(json);
     if (parsed.success) {
       this.data = parsed.data;
+      return;
+    }
+
+    const legacyJson = LegacyJsonItemStateSchema.safeParse(json);
+    if (legacyJson.success) {
+      this.data = upgradeJsonItemState(legacyJson.data);
       return;
     }
 
@@ -172,6 +208,7 @@ export class ItemStateFacade {
       : null;
     const shouldTouch =
       existing === undefined ||
+      existing.name !== input.name ||
       snapshotChanged(existing, input.snapshot) ||
       existing.completedAt !== completedAt;
     if (existing !== undefined && !shouldTouch) return existing;
@@ -179,6 +216,7 @@ export class ItemStateFacade {
     const item: Item = {
       connectorName: input.connectorName,
       paprikaUid: input.paprikaUid,
+      name: input.name,
       ...input.snapshot,
       createdAt: existing?.createdAt ?? input.occurredAt,
       updatedAt: shouldTouch ? input.occurredAt : existing.updatedAt,

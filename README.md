@@ -11,7 +11,7 @@ A daemon that syncs [Paprika Recipe Manager](https://www.paprikaapp.com/) grocer
 
 Because Paprika grocery items do not expose update timestamps, `SYNC_STATE_FILE` must be stored on persistent disk. Without previous state, an existing Paprika/Notion mismatch cannot be ordered exactly; the connector value is used to preserve edits made outside Paprika.
 
-Each stored `Item` tracks `createdAt`, `updatedAt`, and `completedAt`. `completedAt` is nullable and is cleared if an item is uncompleted. The current provider is JSON-backed; the storage contract is async CRUD so it can be replaced with Postgres or another backend.
+Each stored `Item` includes the grocery item `name` for readability and tracks `createdAt`, `updatedAt`, and `completedAt`. `completedAt` is nullable and is cleared if an item is uncompleted. The current provider is JSON-backed; the storage contract is async CRUD so it can be replaced with Postgres or another backend.
 
 ## Notion connector
 

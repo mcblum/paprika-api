@@ -39,7 +39,7 @@ src/
 
 ### Item contract
 
-Anything persisted in the sync state database is an `Item` (`src/types/item.ts`). `createdAt` is when the item record was first created, `updatedAt` is when the stored item state last changed, and `completedAt` is when the item became completed. `completedAt` is `null` for incomplete items and is cleared if the item is uncompleted. The source-specific `paprika.changedAt` and `connector.changedAt` timestamps remain the conflict-resolution inputs.
+Anything persisted in the sync state database is an `Item` (`src/types/item.ts`). `name` is persisted only to make the state file readable. `createdAt` is when the item record was first created, `updatedAt` is when the stored item state last changed, and `completedAt` is when the item became completed. `completedAt` is `null` for incomplete items and is cleared if the item is uncompleted. The source-specific `paprika.changedAt` and `connector.changedAt` timestamps remain the conflict-resolution inputs.
 
 All engine access should go through `ItemStateFacade` in `src/sync/state.ts`; do not couple sync logic directly to the JSON file shape.
 

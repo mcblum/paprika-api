@@ -13,6 +13,7 @@ export const ItemSnapshotSchema = z.object({
 export const ItemSchema = z.object({
   connectorName: z.string(),
   paprikaUid: z.string(),
+  name: z.string(),
   paprika: ItemSideStateSchema,
   connector: ItemSideStateSchema,
   createdAt: z.string().datetime(),
@@ -27,6 +28,7 @@ export type Item = z.infer<typeof ItemSchema>;
 export interface UpsertItemInput {
   readonly connectorName: string;
   readonly paprikaUid: string;
+  readonly name: string;
   readonly snapshot: ItemSnapshot;
   readonly occurredAt: string;
   readonly isCompleted: boolean;
