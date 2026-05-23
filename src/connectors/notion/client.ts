@@ -9,6 +9,7 @@ import {
   extractRichText,
   extractTitle,
   extractRelationPageId,
+  extractStatus,
 } from './transform.js';
 
 export class NotionConnector implements Connector {
@@ -18,6 +19,7 @@ export class NotionConnector implements Connector {
   private readonly databaseId: string;
   private readonly storesDbId: string;
   private readonly defaultStore: string;
+  private readonly titleProperty: string;
 
   /** storeName → Notion page ID */
   private storeNameToId: Map<string, string> | null = null;
@@ -29,6 +31,7 @@ export class NotionConnector implements Connector {
     this.databaseId = config.databaseId;
     this.storesDbId = config.storesDbId;
     this.defaultStore = config.defaultStore;
+    this.titleProperty = config.titleProperty;
   }
 
   // ── Store map ────────────────────────────────────────────────────────────────
@@ -118,7 +121,8 @@ export class NotionConnector implements Connector {
         items.push({
           connectorId: page.id,
           paprikaUid,
-          hash: hashFromPage(page, storeName),
+          hash: hashFromPage(page, storeName, this.titleProperty),
+          done: extractStatus(page.properties['Status']),
         });
       }
 
@@ -136,7 +140,7 @@ export class NotionConnector implements Connector {
     const storePageId = await this.resolveStorePageId(storeName);
     await this.client.pages.create({
       parent: { database_id: this.databaseId },
-      properties: toNotionProperties(item, storePageId),
+      properties: toNotionProperties(item, storePageId, this.titleProperty),
     });
   }
 
@@ -148,7 +152,7 @@ export class NotionConnector implements Connector {
     const storePageId = await this.resolveStorePageId(storeName);
     await this.client.pages.update({
       page_id: connectorId,
-      properties: toNotionProperties(item, storePageId),
+      properties: toNotionProperties(item, storePageId, this.titleProperty),
     });
   }
 

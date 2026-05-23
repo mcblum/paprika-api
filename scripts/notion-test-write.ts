@@ -34,15 +34,18 @@ const dummyItem: PaprikaGroceryItem = {
 
 const dummyListName = 'Test List';
 
+const config = loadConfig();
+
 console.log('\nProperties that would be written to Notion:\n');
-console.log(JSON.stringify(toNotionProperties(dummyItem, dummyListName), null, 2));
+console.log(
+  JSON.stringify(toNotionProperties(dummyItem, null, config.notion.titleProperty), null, 2),
+);
 
 if (!write) {
   console.log('\n(Dry run — pass --write to actually create and delete a page)');
   process.exit(0);
 }
 
-const config = loadConfig();
 const logger = new Logger(config.logLevel);
 const connector = new NotionConnector(config.notion, logger);
 

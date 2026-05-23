@@ -78,14 +78,15 @@ export function hashFromItem(item: PaprikaGroceryItem, listName: string): string
 }
 
 // storeName must be resolved by the caller (reverse-lookup from the relation page ID).
-export function hashFromPage(page: FullPage, storeName: string): string {
+// titleProperty must match the configured NOTION_TITLE_PROPERTY env var.
+export function hashFromPage(page: FullPage, storeName: string, titleProperty: string): string {
   const props = page.properties;
   const hashable: HashableItem = {
-    name: extractTitle(props['Name']),
+    name: extractTitle(props[titleProperty]),
     quantity: extractRichText(props['Quantity']),
     aisle: extractRichText(props['Aisle']),
     recipe: extractRichText(props['Recipe']) || null,
-    purchased: extractCheckbox(props['Status']),
+    purchased: extractStatus(props['Status']),
     listName: storeName,
   };
   return computeHash(hashable);

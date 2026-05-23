@@ -21,7 +21,7 @@ const envSchema = z.object({
     .default('false'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
   CONNECTOR: z.enum(['notion']).default('notion'),
-  LIST_STORE_MAP: z
+  NOTION_STORE_RELATION_MAP: z
     .string()
     .default('{}')
     .transform((val): Record<string, string> => {
@@ -29,7 +29,9 @@ const envSchema = z.object({
       try {
         parsed = JSON.parse(val);
       } catch {
-        throw new Error('LIST_STORE_MAP must be valid JSON, e.g. {"My Grocery List":"Whole Foods"}');
+        throw new Error(
+          'NOTION_STORE_RELATION_MAP must be valid JSON, e.g. {"My Grocery List":"Whole Foods"}',
+        );
       }
       return z.record(z.string()).parse(parsed);
     }),
@@ -60,7 +62,7 @@ export function loadConfig(): AppConfig {
       intervalMs: env.SYNC_INTERVAL_MS,
       includePurchased: env.SYNC_INCLUDE_PURCHASED,
       dryRun: env.DRY_RUN,
-      listStoreMap: env.LIST_STORE_MAP,
+      listStoreMap: env.NOTION_STORE_RELATION_MAP,
     },
     logLevel: env.LOG_LEVEL,
     connector: env.CONNECTOR,

@@ -1,3 +1,4 @@
+import { gzipSync } from 'node:zlib';
 import { z } from 'zod';
 import {
   paprikaApiResponse,
@@ -49,7 +50,26 @@ export class PaprikaClient {
     return data.result;
   }
 
-  private async getToken(): Promise<string> {
+  async purchaseItem(item: PaprikaGroceryItem): Promise<void> {
+    const payload = gzipSync(Buffer.from(JSON.stringify([{ ...item, purchased: true }]), 'utf8'));
+    const form = new FormData();
+    form.append('data', new Blob([payload]), 'file');
+
+    const token = await this.getToken();
+    const response = await fetch(`${BASE_URL}/sync/groceries/`, {
+      method: 'POST',
+      headers: { ...SHARED_HEADERS, Authorization: `Bearer ${token}` },
+      body: form,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Paprika purchaseItem failed for "${item.name}": ${response.status} ${response.statusText}`,
+      );
+    }
+  }
+
+  async getToken(): Promise<string> {
     if (this.cachedToken !== null && Date.now() < this.cachedToken.expiresAt) {
       return this.cachedToken.value;
     }

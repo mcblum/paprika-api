@@ -4,12 +4,13 @@ export interface SyncedItem {
   readonly connectorId: string;
   readonly paprikaUid: string;
   readonly hash: string;
+  readonly done: boolean;
 }
 
 export interface SyncSummary {
   created: number;
   updated: number;
-  deleted: number;
+  purchased: number;
   skipped: number;
 }
 
