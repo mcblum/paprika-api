@@ -25,6 +25,12 @@ export interface SyncConfig {
   readonly stateFile: string;
   /** Maps Paprika list names to the Store label written in Notion. Falls back to the list name if unmapped. */
   readonly listStoreMap: Record<string, string>;
+  /**
+   * When false (default), only `purchased` state syncs from connector → Paprika.
+   * Metadata changes (name, quantity, aisle, recipe, list) only flow Paprika → connector.
+   * When true, all fields sync bidirectionally.
+   */
+  readonly bidirectionalMetadata: boolean;
 }
 
 export interface AppConfig {
