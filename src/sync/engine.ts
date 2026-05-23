@@ -76,15 +76,16 @@ export class SyncEngine {
 
       const listName = listMap.get(item.list_uid) ?? 'Unknown';
       const storeName = this.config.listStoreMap[listName] ?? listName;
-      const currentHash = hashFromItem(item, storeName);
+      const effectiveStoreName = await connector.resolveStoreName(storeName);
+      const currentHash = hashFromItem(item, effectiveStoreName);
       const synced = syncedMap.get(uid);
 
       if (synced === undefined) {
-        this.logger.info(`[${connector.name}] CREATE  ${item.name} → ${storeName}`);
+        this.logger.info(`[${connector.name}] CREATE  ${item.name} → ${effectiveStoreName}`);
         if (!this.config.dryRun) await connector.create(item, storeName);
         summary.created++;
       } else if (synced.hash !== currentHash) {
-        this.logger.info(`[${connector.name}] UPDATE  ${item.name} → ${storeName}`);
+        this.logger.info(`[${connector.name}] UPDATE  ${item.name} → ${effectiveStoreName}`);
         if (!this.config.dryRun) await connector.update(synced.connectorId, item, storeName);
         summary.updated++;
       } else {

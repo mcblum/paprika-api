@@ -70,8 +70,10 @@ const syncedMap = new Map(syncedItems.map((s) => [s.paprikaUid, s] as const));
 
 const summary = { created: 0, updated: 0, skipped: 0 };
 
+const effectiveStoreName = await connector.resolveStoreName(storeName);
+
 for (const item of listItems) {
-  const currentHash = hashFromItem(item, storeName);
+  const currentHash = hashFromItem(item, effectiveStoreName);
   const synced = syncedMap.get(item.uid);
 
   if (synced === undefined) {

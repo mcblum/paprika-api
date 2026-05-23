@@ -17,6 +17,7 @@ export interface SyncSummary {
 export interface Connector {
   readonly name: string;
   queryAll(): Promise<SyncedItem[]>;
+  resolveStoreName(requested: string): Promise<string>;
   create(item: PaprikaGroceryItem, listName: string): Promise<void>;
   update(connectorId: string, item: PaprikaGroceryItem, listName: string): Promise<void>;
   delete(connectorId: string): Promise<void>;

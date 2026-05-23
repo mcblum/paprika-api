@@ -90,8 +90,15 @@ export class NotionConnector implements Connector {
     return null;
   }
 
-  private resolveStoreName(pageId: string): string | null {
+  private lookupStoreNameById(pageId: string): string | null {
     return this.storeIdToName?.get(pageId) ?? null;
+  }
+
+  async resolveStoreName(requested: string): Promise<string> {
+    await this.ensureStoreMap();
+    if (this.storeNameToId?.has(requested)) return requested;
+    if (this.storeNameToId?.has(this.defaultStore)) return this.defaultStore;
+    return '';
   }
 
   // ── Connector interface ──────────────────────────────────────────────────────
@@ -116,7 +123,7 @@ export class NotionConnector implements Connector {
 
         const storePageId = extractRelationPageId(page.properties['Store']);
         const storeName =
-          storePageId !== null ? (this.resolveStoreName(storePageId) ?? '') : '';
+          storePageId !== null ? (this.lookupStoreNameById(storePageId) ?? '') : '';
 
         items.push({
           connectorId: page.id,
