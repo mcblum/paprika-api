@@ -51,7 +51,15 @@ export class PaprikaClient {
   }
 
   async purchaseItem(item: PaprikaGroceryItem): Promise<void> {
-    const payload = gzipSync(Buffer.from(JSON.stringify([{ ...item, purchased: true }]), 'utf8'));
+    await this.postGroceryItem({ ...item, purchased: true });
+  }
+
+  async unpurchaseItem(item: PaprikaGroceryItem): Promise<void> {
+    await this.postGroceryItem({ ...item, purchased: false });
+  }
+
+  private async postGroceryItem(item: PaprikaGroceryItem): Promise<void> {
+    const payload = gzipSync(Buffer.from(JSON.stringify([item]), 'utf8'));
     const form = new FormData();
     form.append('data', new Blob([payload]), 'file');
 
@@ -64,7 +72,7 @@ export class PaprikaClient {
 
     if (!response.ok) {
       throw new Error(
-        `Paprika purchaseItem failed for "${item.name}": ${response.status} ${response.statusText}`,
+        `Paprika grocery update failed for "${item.name}": ${response.status} ${response.statusText}`,
       );
     }
   }

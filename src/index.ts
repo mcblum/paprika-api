@@ -25,7 +25,7 @@ async function tick(engine: SyncEngine, logger: Logger): Promise<void> {
     const summary = await engine.runCycle();
     logger.info(
       `Sync complete — created: ${summary.created}, updated: ${summary.updated}, ` +
-        `purchased: ${summary.purchased}, skipped: ${summary.skipped}`,
+        `purchased: ${summary.purchased}, unpurchased: ${summary.unpurchased}, skipped: ${summary.skipped}`,
     );
   } catch (err) {
     logger.error(`Sync cycle failed: ${err instanceof Error ? err.message : String(err)}`);

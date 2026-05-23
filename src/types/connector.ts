@@ -11,6 +11,7 @@ export interface SyncSummary {
   created: number;
   updated: number;
   purchased: number;
+  unpurchased: number;
   skipped: number;
 }
 
