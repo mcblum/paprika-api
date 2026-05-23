@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.*
+scripts/
+*.md
+.git/
+.gitignore
+.nvmrc
+tsconfig.scripts.json
