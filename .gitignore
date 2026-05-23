@@ -25,3 +25,7 @@ dist/
 # Logs
 *.log
 npm-debug.log*
+
+# Local sync state
+.sync-state.json
+.sync-state.json.tmp

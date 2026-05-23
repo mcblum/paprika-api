@@ -1,10 +1,12 @@
 import type { PaprikaGroceryItem } from './paprika.js';
+import type { HashableItem } from '../sync/hash.js';
 
 export interface SyncedItem {
   readonly connectorId: string;
   readonly paprikaUid: string;
   readonly hash: string;
-  readonly done: boolean;
+  readonly content: HashableItem;
+  readonly updatedAt: string | null;
 }
 
 export interface SyncSummary {

@@ -6,6 +6,7 @@ import type { Logger } from '../../logger.js';
 import {
   toNotionProperties,
   hashFromPage,
+  hashableFromPage,
   extractRichText,
   extractTitle,
   extractRelationPageId,
@@ -129,7 +130,8 @@ export class NotionConnector implements Connector {
           connectorId: page.id,
           paprikaUid,
           hash: hashFromPage(page, storeName, this.titleProperty),
-          done: extractStatus(page.properties['Status']),
+          content: hashableFromPage(page, storeName, this.titleProperty),
+          updatedAt: page.last_edited_time,
         });
       }
 
