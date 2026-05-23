@@ -1,0 +1,34 @@
+{
+  "name": "paprika-api",
+  "version": "0.1.0",
+  "description": "Paprika Recipe Manager API interface with pluggable connectors",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit",
+    "script:paprika:auth": "tsx scripts/paprika-auth.ts",
+    "script:paprika:lists": "tsx scripts/paprika-lists.ts",
+    "script:paprika:items": "tsx scripts/paprika-items.ts",
+    "script:notion:query": "tsx scripts/notion-query.ts",
+    "script:notion:test-write": "tsx scripts/notion-test-write.ts",
+    "script:debug:paprika:auth": "tsx scripts/debug-paprika-auth-raw.ts",
+    "script:notion:schema": "tsx scripts/notion-db-schema.ts",
+    "script:sync:test-list": "tsx scripts/sync-test-list.ts"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2",
+    "dotenv": "^16",
+    "zod": "^3"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "tsx": "^4",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
